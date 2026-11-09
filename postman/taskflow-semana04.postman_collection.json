@@ -1,0 +1,716 @@
+{
+  "info": {
+    "name": "TaskFlow Sprint 4",
+    "description": "CRUD de projetos. Faça login como A ou B antes. Sem cookies/senhas reais.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Criar (A, nome válido)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Login como A. Esperado: 201; user_id é o da sessão.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Feira de tecnologia\",\n  \"descricao\": \"Organização dos trabalhos da turma\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2a. Criar com nome vazio",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422', () => pm.response.to.have.status(422));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 422; nada gravado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2b. Criar com nome de tipo errado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422', () => pm.response.to.have.status(422));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 422; nada gravado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": [\n    \"a\",\n    \"b\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2c. Criar com JSON malformado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 400; nada gravado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nome\": }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2d. Criar com corpo que não é objeto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 400; nada gravado.",
+        "body": {
+          "mode": "raw",
+          "raw": "42",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2e. Tentar trocar o dono",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 201; user_id do JSON é ignorado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"X\",\n  \"user_id\": 999\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. Listar (A)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Login como A. Esperado: 200, somente projetos de A."
+      }
+    },
+    {
+      "name": "4. Listar (B sem projetos)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Login como B. Esperado: 200 com coleção vazia."
+      }
+    },
+    {
+      "name": "9. Método não previsto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 405', () => pm.response.to.have.status(405));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects/index.php",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects",
+            "index.php"
+          ]
+        },
+        "description": "Esperado: 405 com Allow: GET, POST."
+      }
+    },
+    {
+      "name": "Buscar por ID (A)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Login como A, id=1 (ajuste ao ID existente). Esperado: 200."
+      }
+    },
+    {
+      "name": "6. Buscar ID de A usando B",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Login como B, id=1. Esperado: 404."
+      }
+    },
+    {
+      "name": "Buscar id inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=abc",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "abc"
+            }
+          ]
+        },
+        "description": "id=abc (e id=0). Esperado: 400."
+      }
+    },
+    {
+      "name": "Atualizar (A)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Login como A. Esperado: 200; confira com GET.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Feira de tecnologia 2\",\n  \"descricao\": null,\n  \"status\": \"arquivado\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "7. Atualizar com status inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422', () => pm.response.to.have.status(422));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Esperado: 422; dados intactos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Feira\",\n  \"status\": \"cancelado\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "6b. Atualizar ID de A usando B",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Login como B. Esperado: 404; dados intactos.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Hack\",\n  \"status\": \"ativo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "8. Excluir projeto próprio sem tarefas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=2",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "2"
+            }
+          ]
+        },
+        "description": "Login como A, id de projeto descartável. Esperado: 200; nova busca recebe 404."
+      }
+    },
+    {
+      "name": "Excluir projeto com tarefas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 409', () => pm.response.to.have.status(409));",
+              "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/projects-detail/index.php?id=1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "projects-detail",
+            "index.php"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Projeto com tarefas. Esperado: 409; registro permanece."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost"
+    }
+  ]
+}

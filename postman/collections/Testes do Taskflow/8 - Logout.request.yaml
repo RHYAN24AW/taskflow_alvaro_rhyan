@@ -1,0 +1,8 @@
+$kind: http-request
+description: ""
+url: http://localhost/TaskFlow/api/auth/logout.php
+method: POST
+body:
+  type: json
+  content: ""
+order: 8000

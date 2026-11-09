@@ -1,35 +1,27 @@
-
 <?php
 
-require_once __DIR__ . '/../../helpers/response.php';
+require_once __DIR__ . '/../../src/helpers/response.php';
+require_once __DIR__ . '/../../src/helpers/auth.php';
 require_once __DIR__ . '/../../config/database.php';
+
+verificar_autenticacao();
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 if ($metodo !== 'GET') {
+    header('Allow: GET');
     json_response(false, 'Método não permitido', null, 405);
 }
 
 try {
-    $sql = 'SELECT id, nome, email, created_at FROM users';
+    // Nunca seleciona senha_hash.
+    $sql = 'SELECT id, nome, email, created_at FROM users ORDER BY id';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-   $stmt = $pdo->prepare($sql);
-   $stmt->execute();
-
-   $usuarios = $stmt->fetchAll();
-
-   json_response(
-    true,
-    'Usuários listados com sucesso',
-    $usuarios,
-    200
-);
-
+    json_response(true, 'Usuários listados com sucesso', $usuarios);
 } catch (PDOException $e) {
-    json_response(
-        false,
-         'Erro interno ao consultar usuários',
-          null,
-           500
-    );
+    error_log($e->getMessage());
+    json_response(false, 'Erro interno ao consultar usuários', null, 500);
 }

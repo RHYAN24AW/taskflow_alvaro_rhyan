@@ -1,0 +1,16 @@
+$kind: http-request
+description: ""
+url: http://localhost/TaskFlow/api/auth/register.php
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"nome\": \"\",\r
+
+    \    \"email\": \"email-invalido\",\r
+
+    \    \"senha\": \"123\"\r
+
+    }"
+order: 1000

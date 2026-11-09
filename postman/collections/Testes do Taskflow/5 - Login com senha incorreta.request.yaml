@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: http://localhost/TaskFlow/api/auth/login.php
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"teste.taskflow2026@example.com\",\r
+
+    \    \"senha\": \"SenhaErrada123\"\r
+
+    }"
+order: 5000
