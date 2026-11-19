@@ -1,0 +1,2217 @@
+{
+  "info": {
+    "name": "TaskFlow Semana 5",
+    "description": "CRUD de tarefas. Rode na ordem. Use somente dados fictícios.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/Taskflow"
+    },
+    {
+      "key": "project_a_id",
+      "value": "1"
+    },
+    {
+      "key": "project_b_id",
+      "value": "2"
+    },
+    {
+      "key": "task_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. Contas",
+      "description": "Pré-requisito: contas A e B cadastradas (register.php) e cada uma com ao menos 1 projeto. Ajuste project_a_id e project_b_id nas variáveis da collection.",
+      "item": [
+        {
+          "name": "Login A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login.php"
+              ]
+            },
+            "description": "Autentica a conta A (cookie PHPSESSID guardado pelo Postman). Use e-mails/senhas fictícios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"a@example.com\",\n  \"senha\": \"SenhaFicticia123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Criar tarefa (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "1.1 Criar válido (A, projeto de A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "const d = pm.response.json().dados;",
+                  "pm.collectionVariables.set('task_id', d.id);",
+                  "pm.test('status pendente', () => pm.expect(d.status).to.eql('pendente'));",
+                  "pm.test('retorna user_id e project_id', () => pm.expect(d).to.have.property('user_id'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Esperado: 201, status 'pendente', user_id da conta A.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Montar layout da tela\",\n  \"descricao\": \"Primeira versão no papel\",\n  \"prioridade\": \"alta\",\n  \"data_inicio\": \"2026-11-02\",\n  \"data_prazo\": \"2026-11-10\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "1.2 Criar só com título e projeto (prioridade padrão)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('prioridade media', () => pm.expect(pm.response.json().dados.prioridade).to.eql('media'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "prioridade padrão 'media'.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarefa mínima\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.1 Título vazio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Nenhuma inserção.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"   \",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.2 Título como array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "is_string() evita erro fatal em mb_strlen().",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": [\n    \"x\"\n  ],\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.3 Prioridade 'urgente'",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"prioridade\": \"urgente\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.4 data_prazo 2026-02-31",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "validar_data_iso compara format() com o texto recebido.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"data_prazo\": \"2026-02-31\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.5 Prazo anterior ao início",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "A API responde antes do CHECK do banco.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"data_inicio\": \"2026-11-10\",\n  \"data_prazo\": \"2026-11-02\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.6 JSON malformado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"titulo\":",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.7 project_id inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"titulo\":\"x\",\"project_id\":\"abc\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "3.1 Projeto inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Nenhuma inserção.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"titulo\":\"x\",\"project_id\":999999}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4-5. Listar e filtrar (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "4.1 Listar (A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('tem projeto_nome', () => { const l = pm.response.json().dados; pm.expect(l.length).to.be.above(0); pm.expect(l[0]).to.have.property('projeto_nome'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Só tarefas de A, cada uma com projeto_nome."
+          }
+        },
+        {
+          "name": "5.1 Filtro project_id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?project_id={{project_a_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{project_a_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.2 Filtro status=pendente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?status=pendente",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pendente"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.3 Filtro prioridade=alta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?prioridade=alta",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "prioridade",
+                  "value": "alta"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.4 Filtro limite=1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('no máximo 1', () => pm.expect(pm.response.json().dados.length).to.be.at.most(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?limite=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.5 Filtros combinados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?project_id={{project_a_id}}&status=pendente&prioridade=alta",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{project_a_id}}"
+                },
+                {
+                  "key": "status",
+                  "value": "pendente"
+                },
+                {
+                  "key": "prioridade",
+                  "value": "alta"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.6 status=feito (inválido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?status=feito",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "feito"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.7 limite=0 (inválido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?limite=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5.8 project_id=abc (inválido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?project_id=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "abc"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Buscar por ID (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "8.1 Buscar tarefa de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8.2 ID inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id=999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "999999"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8.3 id=abc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "abc"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8.4 id=0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8.5 Sem id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. PATCH status (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "9.1 PATCH concluido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('status concluido', () => pm.expect(pm.response.json().dados.status).to.eql('concluido'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Confirme updated_at no cliente SQL.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"concluido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "9.2 Buscar após PATCH",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('persistiu', () => pm.expect(pm.response.json().dados.status).to.eql('concluido'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "9.3 PATCH status inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Nada muda.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"feito\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "9.4 PATCH JSON malformado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. PUT (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "10.1 PUT válido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('título trocado', () => pm.expect(pm.response.json().dados.titulo).to.eql('Layout revisado'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Layout revisado\",\n  \"descricao\": null,\n  \"status\": \"em_andamento\",\n  \"prioridade\": \"baixa\",\n  \"data_inicio\": \"2026-11-03\",\n  \"data_prazo\": \"2026-12-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "10.2 PUT sem status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"prioridade\": \"baixa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "10.3 PUT prazo anterior ao início",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"status\": \"pendente\",\n  \"prioridade\": \"baixa\",\n  \"data_inicio\": \"2026-11-10\",\n  \"data_prazo\": \"2026-11-02\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Método não suportado",
+      "description": "",
+      "item": [
+        {
+          "name": "12.1 POST em tasks-detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 405', () => pm.response.to.have.status(405));",
+                  "pm.test('Allow', () => pm.expect(pm.response.headers.get('Allow')).to.eql('GET, PUT, PATCH, DELETE'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Cabeçalho Allow: GET, PUT, PATCH, DELETE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "12.2 DELETE em tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 405', () => pm.response.to.have.status(405));",
+                  "pm.test('Allow', () => pm.expect(pm.response.headers.get('Allow')).to.eql('GET, POST'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Allow: GET, POST."
+          }
+        }
+      ]
+    },
+    {
+      "name": "B. Conta B (isolamento)",
+      "description": "",
+      "item": [
+        {
+          "name": "Login B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login.php"
+              ]
+            },
+            "description": "Autentica a conta B (cookie PHPSESSID guardado pelo Postman). Use e-mails/senhas fictícios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"b@example.com\",\n  \"senha\": \"SenhaFicticia123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "3.2 B cria em projeto de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Nenhuma inserção.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"invasão\",\n  \"project_id\": {{project_a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "6.1 B lista",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "Só tarefas de B."
+          }
+        },
+        {
+          "name": "6.2 B lista com project_id de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);",
+                  "pm.test('coleção vazia', () => pm.expect(pm.response.json().dados).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php?project_id={{project_a_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "project_id",
+                  "value": "{{project_a_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8.6 B busca tarefa de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "9.5 B faz PATCH na tarefa de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Tarefa de A fica intacta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"pendente\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "10.4 B faz PUT na tarefa de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Tarefa de A fica intacta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"hack\",\n  \"status\": \"pendente\",\n  \"prioridade\": \"alta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "11.1 B exclui tarefa de A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": "Registro permanece."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Sem sessão",
+      "description": "",
+      "item": [
+        {
+          "name": "7.0 Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout.php"
+              ]
+            },
+            "description": "Encerra a sessão para testar os 401.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "7.1 Listar sem login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "7.2 Criar sem login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/index.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "index.php"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"titulo\":\"x\",\"project_id\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "7.3 Buscar sem login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. DELETE (conta A)",
+      "description": "",
+      "item": [
+        {
+          "name": "Login A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login.php",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login.php"
+              ]
+            },
+            "description": "Autentica a conta A (cookie PHPSESSID guardado pelo Postman). Use e-mails/senhas fictícios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"a@example.com\",\n  \"senha\": \"SenhaFicticia123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "11.2 A exclui a própria tarefa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "11.3 Buscar após excluir",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "11.4 Excluir de novo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks-detail/index.php?id={{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{task_id}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "11.5 Excluir projeto que ainda tem tarefas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Resposta em JSON', () => pm.response.to.be.json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects-detail/index.php?id={{project_a_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "projects-detail",
+                "index.php"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{project_a_id}}"
+                }
+              ]
+            },
+            "description": "SQLSTATE 23503 tratado na Sprint 4. Só vale se o projeto ainda tiver tarefas (ex.: a tarefa mínima 1.2). Política final: definida pelo professor."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -9,19 +9,21 @@ verificar_autenticacao();
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 if ($metodo !== 'GET') {
-    header('Allow: GET');
     json_response(false, 'Método não permitido', null, 405);
 }
 
 try {
-    // Nunca seleciona senha_hash.
-    $sql = 'SELECT id, nome, email, created_at FROM users ORDER BY id';
+    
+    $sql = "SELECT id, nome, email FROM users";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    json_response(true, 'Usuários listados com sucesso', $usuarios);
+   
+    $stmt->execute();
+    
+    $usuarios = $stmt->fetchAll();
+ 
+    json_response(true, 'Usuários encontrados', $usuarios, 200);
 } catch (PDOException $e) {
-    error_log($e->getMessage());
-    json_response(false, 'Erro interno ao consultar usuários', null, 500);
+   
+    json_response(false, 'Erro ao buscar usuários', null, 500);
 }

@@ -2,14 +2,13 @@
 
 require_once __DIR__ . '/../../src/helpers/response.php';
 require_once __DIR__ . '/../../src/helpers/auth.php';
-require_once __DIR__ . '/../../src/helpers/validate.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../src/models/Project.php';
 
 verificar_autenticacao();
 
-$userId = (int) $_SESSION['usuario_id'];
-$model = new Project($pdo);
+$userId = (int) $_SESSION['user_id'];
+$projects = new Project($pdo);
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 if (!in_array($metodo, ['GET', 'PUT', 'DELETE'], true)) {
@@ -28,12 +27,19 @@ if ($id === false) {
 
 try {
     if ($metodo === 'GET') {
-        $projeto = $model->buscarPorId($id, $userId);
-        if ($projeto === null) {
+       
+        $projeto = $projects->buscarPorId($id, $userId);
+
+        
+        if (!$projeto) {
             json_response(false, 'Projeto não encontrado', null, 404);
         }
+
+        
         json_response(true, 'Projeto encontrado', $projeto);
+
     } elseif ($metodo === 'PUT') {
+      
         $corpo = file_get_contents('php://input');
 
         try {
@@ -42,42 +48,51 @@ try {
             json_response(false, 'JSON inválido', null, 400);
         }
 
-        if (!is_array($dados)) {
-            json_response(false, 'O corpo deve ser um objeto JSON', null, 400);
+       
+        $nome = trim($dados['nome']);
+        $descricao = trim($dados['descricao']);
+        $status = trim($dados['status']);
+        $erros = [];
+
+        if (empty($nome)) {
+            $erros['nome'] = 'nome: projeto deve conter um nome';
         }
 
-        $resultado = validar_projeto($dados, true);
-        if ($resultado['erros']) {
-            json_response(false, 'Dados inválidos', $resultado['erros'], 422);
+        if (empty($status)) {
+            $erros['status'] = 'status: defina o status do projeto';
         }
 
-        // user_id do corpo é ignorado: o dono nunca muda.
-        $projeto = $model->atualizar(
-            $id,
-            $userId,
-            $resultado['dados']['nome'],
-            $resultado['dados']['descricao'],
-            $resultado['dados']['status']
-        );
-        if ($projeto === null) {
-            json_response(false, 'Projeto não encontrado', null, 404);
+        if ($erros) {
+            json_response(false, 'Dados inválidos', $erros, 422);
         }
-        json_response(true, 'Projeto atualizado com sucesso', $projeto);
+
+       
+        $projeto = $projects->atualizar($id, $userId, $nome, $descricao, $status);
+
+      
+        if (!$projeto) {
+            json_response(false, 'Falha ao atualizar projeto.', null, 404);
+        }
+
+        json_response(true, 'Projeto atualizado com sucesso!', $projeto);
+
     } else {
-        if (!$model->deletar($id, $userId)) {
-            json_response(false, 'Projeto não encontrado', null, 404);
+      
+        $excluido = $projects->deletar($id, $userId);
+
+        if (!$excluido) {
+            json_response(false, 'Projeto não encontrado.', null, 404);
         }
-        json_response(true, 'Projeto excluído com sucesso', ['id' => $id]);
+
+        json_response(true, 'Projeto excluído com sucesso!');
     }
 } catch (PDOException | RuntimeException $e) {
+    
     if ($e instanceof PDOException && $e->getCode() === '23503') {
-        json_response(
-            false,
-            'Não é possível excluir: o projeto possui tarefas.',
-            null,
-            409
-        );
+      
+        json_response(false, 'O projeto possui tarefas', null, 409);
     }
+
     error_log($e->getMessage());
     json_response(false, 'Erro interno do servidor', null, 500);
 }

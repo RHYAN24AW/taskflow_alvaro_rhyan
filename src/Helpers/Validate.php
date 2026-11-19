@@ -1,95 +1,72 @@
 <?php
 
-/**
- * Cadastro: nome (obrigatório, até 100), e-mail válido (até 150)
- * e senha com no mínimo 8 caracteres. Tipos errados viram erro, não fatal.
- */
 function validar_cadastro(array $dados): array
 {
     $erros = [];
 
-    $nome = $dados['nome'] ?? null;
-    if (!is_string($nome) || trim($nome) === '') {
-        $erros[] = 'nome: é obrigatório';
-    } elseif (mb_strlen(trim($nome), 'UTF-8') > 100) {
-        $erros[] = 'nome: deve ter no máximo 100 caracteres';
+   
+    $nome = trim($dados['nome'] ?? '');
+    if (empty($nome)) {
+        $erros['nome'] = 'Nome é obrigatório.';
     }
 
-    $email = $dados['email'] ?? null;
-    if (!is_string($email) || !filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
-        $erros[] = 'email: informe um e-mail válido';
-    } elseif (mb_strlen(trim($email), 'UTF-8') > 150) {
-        $erros[] = 'email: deve ter no máximo 150 caracteres';
+   
+    $email = trim($dados['email'] ?? '');
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erros['email'] = 'E-mail inválido.';
     }
 
-    $senha = $dados['senha'] ?? null;
-    if (!is_string($senha) || mb_strlen($senha, 'UTF-8') < 8) {
-        $erros[] = 'senha: deve ter pelo menos 8 caracteres';
+    
+    $senha = strlen($dados['senha']);
+    if (empty($senha)) {
+        $erros['senha'] = 'A senha é obrigatória.';
     }
-
+    if ($senha < 6) {
+        $erros['senha'] = 'A senha deve ter no mínimo 6 caractéres.';
+    }
     return $erros;
 }
 
-/** Login: só confere se e-mail e senha chegaram no formato certo. */
 function validar_login(array $dados): array
 {
     $erros = [];
-
-    $email = $dados['email'] ?? null;
-    if (!is_string($email) || !filter_var(trim($email), FILTER_VALIDATE_EMAIL)) {
-        $erros[] = 'email: informe um e-mail válido';
+    
+    $email = trim($dados['email'] ?? '');
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erros['email'] = 'E-mail inválido.';
     }
 
-    $senha = $dados['senha'] ?? null;
-    if (!is_string($senha) || $senha === '') {
-        $erros[] = 'senha: é obrigatória';
+   
+    $senha = strlen($dados['senha']);
+    if (empty($senha) || $senha < 6) {
+        $erros['senha'] = 'A senha deve ter no mínimo 6 caractéres.';
     }
 
     return $erros;
 }
 
-/**
- * Projetos (POST e PUT). Confere o tipo antes de trim()/mb_strlen().
- * Retorna ['erros' => [...], 'dados' => ['nome', 'descricao', 'status']].
- * O user_id nunca é lido do corpo: o dono vem da sessão.
- */
-function validar_projeto(array $dados, bool $exigirStatus = false): array
+function ler_json_corpo(): ?array
 {
-    $erros = [];
-
-    $nome = $dados['nome'] ?? null;
-    if (!is_string($nome)) {
-        $erros[] = 'nome: deve ser texto';
-        $nome = null;
-    } else {
-        $nome = trim($nome);
-        $tamanho = mb_strlen($nome, 'UTF-8');
-        if ($tamanho < 1 || $tamanho > 150) {
-            $erros[] = 'nome: deve ter de 1 a 150 caracteres';
-        }
+    $dados = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($dados) || array_is_list($dados)) {
+        return null;
     }
+    return $dados;
+}
 
-    $descricao = $dados['descricao'] ?? null;
-    if ($descricao !== null && !is_string($descricao)) {
-        $erros[] = 'descricao: deve ser texto ou null';
-        $descricao = null;
-    } elseif (is_string($descricao)) {
-        $descricao = trim($descricao);
-        if ($descricao === '') {
-            $descricao = null;
-        }
+function validar_data_iso(string $data): bool
+{
+    $d = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
+    return $d !== false && $d->format('Y-m-d') === $data;
+}
+
+
+function comprimento_texto(string $texto): int
+{
+    if (function_exists('mb_strlen')) {
+        return mb_strlen($texto, 'UTF-8');
     }
-
-    $status = $dados['status'] ?? null;
-    if ($exigirStatus) {
-        if (!is_string($status) || !in_array($status, ['ativo', 'arquivado'], true)) {
-            $erros[] = 'status: deve ser "ativo" ou "arquivado"';
-            $status = null;
-        }
-    }
-
-    return [
-        'erros' => $erros,
-        'dados' => ['nome' => $nome, 'descricao' => $descricao, 'status' => $status],
-    ];
+    $quantidade = preg_match_all('/./us', $texto);
+    return $quantidade === false ? strlen($texto) : $quantidade;
 }

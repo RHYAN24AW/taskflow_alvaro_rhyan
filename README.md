@@ -13,4 +13,7 @@ Sistema simples de tarefas em PHP + PostgreSQL.
 - `GET|POST /api/projects/index.php` (listar / criar)
 - `GET|PUT|DELETE /api/projects-detail/index.php?id=N` (buscar / atualizar / excluir)
 
-Collections do Postman em `postman/`.
+- `GET|POST /api/tasks/index.php` (listar com filtros `project_id`, `status`, `prioridade`, `limite` / criar)
+- `GET|PUT|PATCH|DELETE /api/tasks-detail/index.php?id=N` (buscar / atualizar tudo / atualizar só o status / excluir)
+
+Collections do Postman em `postman/` (Semana 5: `taskflow-semana05.postman_collection.json`, com `base_url = http://localhost:8000`).
